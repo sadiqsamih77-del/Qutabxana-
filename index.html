@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1c2d4e">
+<title>School Student Manager</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Segoe UI,sans-serif;background:#f4f6f9;color:#172033}
+button,input,select{font:inherit}button{border:0;border-radius:10px;padding:12px 15px;color:#fff;font-weight:700;cursor:pointer}
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}.login-card{width:min(430px,100%);background:#fff;border-radius:18px;padding:28px;box-shadow:0 10px 35px #0001}
+h1{margin:0 0 8px}.muted{color:#687386}.field{margin:14px 0}.field label{display:block;font-weight:700;margin-bottom:6px}.field input,.field select{width:100%;padding:12px;border:1px solid #d7dce5;border-radius:10px;background:#fff}
+.primary{background:#356ae6}.green{background:#2f8f62}.orange{background:#d98419}.red{background:#b83b42}.gray{background:#687386}.navy{background:#1c2d4e}
+.app{display:none;min-height:100vh}.sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:#1c2d4e;color:#fff;padding:18px;z-index:5}.brand{font-size:22px;font-weight:800;margin-bottom:20px}.nav button{width:100%;margin:5px 0;text-align:left}.main{margin-left:240px;padding:22px;max-width:1400px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 3px 15px #0000000b}.card .num{font-size:30px;font-weight:800;margin-top:10px}
+.panel{background:#fff;border-radius:16px;padding:18px;box-shadow:0 3px 15px #0000000b;margin-top:18px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.toolbar input,.toolbar select{padding:11px;border:1px solid #d7dce5;border-radius:10px;flex:1;min-width:150px}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:12px;border-bottom:1px solid #edf0f4;text-align:left}.table th{background:#f8f9fb}.actions{display:flex;gap:6px;flex-wrap:wrap}.actions button{padding:8px 10px}
+.modal{position:fixed;inset:0;background:#0007;display:none;place-items:center;padding:16px;z-index:20}.modal-card{background:#fff;border-radius:18px;padding:22px;width:min(520px,100%);max-height:92vh;overflow:auto}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form-grid .full{grid-column:1/-1}
+.stats-row{display:flex;align-items:center;gap:10px;margin:10px 0}.bar{height:24px;background:#356ae6;border-radius:7px;min-width:3px}.log{max-height:520px;overflow:auto}.log div{padding:10px;border-bottom:1px solid #eee}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#172033;color:#fff;padding:12px 18px;border-radius:10px;display:none;z-index:50}
+@media(max-width:760px){
+ .sidebar{position:static;width:auto;padding:12px}.brand{margin-bottom:8px}.nav{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.nav button{margin:0;text-align:center;padding:10px}
+ .main{margin-left:0;padding:14px}.cards{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.topbar button{width:100%}
+ .panel{padding:14px}.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}
+ .toolbar>*{width:100%;flex:auto}.table{min-width:680px}
+}
+</style>
+</head>
+<body>
+<div id="login" class="login">
+  <div class="login-card">
+    <h1>School System</h1>
+    <p id="loginSub" class="muted"></p>
+    <div class="field"><label>Password</label><input id="pw" type="password" maxlength="64"></div>
+    <div id="confirmWrap" class="field" style="display:none"><label>Confirm password</label><input id="pw2" type="password" maxlength="64"></div>
+    <button id="loginBtn" class="primary" style="width:100%"></button>
+    <p class="muted" style="font-size:12px;margin-top:15px">Data is stored in this browser. For shared/online use, connect this UI to a server database.</p>
+  </div>
+</div>
+
+<div id="app" class="app">
+ <aside class="sidebar">
+  <div class="brand">🎓 School System</div>
+  <div class="nav">
+   <button class="primary" onclick="show('dashboard')">Dashboard</button>
+   <button class="primary" onclick="show('students')">Students</button>
+   <button class="green" onclick="openStudent()">Add student</button>
+   <button class="orange" onclick="editPrompt()">Edit student</button>
+   <button class="red" onclick="deletePrompt()">Delete student</button>
+   <button class="primary" onclick="show('stats')">Statistics</button>
+   <button class="gray" onclick="show('log')">Activity log</button>
+   <button class="navy" onclick="show('settings')">Settings</button>
+   <button class="gray" onclick="logout()">Sign out</button>
+  </div>
+ </aside>
+ <main class="main">
+  <div class="topbar"><div><h1 id="pageTitle">Dashboard</h1><div class="muted">Mobile-friendly School Student Manager</div></div><button class="green" onclick="openStudent()">＋ Add student</button></div>
+  <section id="dashboard" class="view">
+   <div class="cards">
+    <div class="card"><div class="muted">Total students</div><div id="total" class="num">0</div></div>
+    <div class="card"><div class="muted">Grades in use</div><div id="gradesN" class="num">0</div></div>
+    <div class="card"><div class="muted">Last student added</div><div id="latest" class="num" style="font-size:22px">-</div></div>
+   </div>
+  </section>
+
+  <section id="students" class="view panel" style="display:none">
+   <div class="toolbar">
+    <input id="search" placeholder="Search by ID or name" oninput="renderStudents()">
+    <select id="gradeFilter" onchange="renderStudents()"><option value="0">All grades</option></select>
+    <button class="green" onclick="openStudent()">Add</button>
+    <button class="blue primary" onclick="exportCSV()">Export CSV</button>
+   </div>
+   <div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Grade</th><th>Section</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead><tbody id="studentRows"></tbody></table></div>
+   <p id="count" class="muted"></p>
+  </section>
+
+  <section id="stats" class="view panel" style="display:none"><h2>Students per grade</h2><div id="statsRows"></div></section>
+  <section id="log" class="view panel" style="display:none"><h2>Activity log</h2><div id="logRows" class="log"></div></section>
+  <section id="settings" class="view panel" style="display:none"><h2>Change password</h2>
+   <div style="max-width:500px">
+    <div class="field"><label>Current password</label><input id="oldPw" type="password"></div>
+    <div class="field"><label>New password</label><input id="newPw" type="password"></div>
+    <div class="field"><label>Confirm new password</label><input id="newPw2" type="password"></div>
+    <button class="primary" onclick="changePassword()">Change password</button>
+   </div>
+  </section>
+ </main>
+</div>
+
+<div id="studentModal" class="modal">
+ <div class="modal-card">
+  <h2 id="modalTitle">Add student</h2>
+  <div class="form-grid">
+   <div class="field"><label>Student ID *</label><input id="sid" maxlength="12"></div>
+   <div class="field"><label>Full name *</label><input id="sname" maxlength="60"></div>
+   <div class="field"><label>Grade</label><select id="sgrade"></select></div>
+   <div class="field"><label>Section</label><select id="ssection"><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option></select></div>
+   <div class="field"><label>Guardian phone</label><input id="sphone" maxlength="15"></div>
+   <div class="field"><label>Email</label><input id="semail" maxlength="80"></div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:10px"><button id="saveStudentBtn" class="green" onclick="saveStudent()">Save</button><button class="gray" onclick="closeModal()">Cancel</button></div>
+ </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const KEY='school_students_v1', LOG='school_log_v1', ADMIN='school_admin_v1';
+let students=JSON.parse(localStorage.getItem(KEY)||'[]');
+let logs=JSON.parse(localStorage.getItem(LOG)||'[]');
+let editId=null, fails=0, lockUntil=0;
+
+function save(){localStorage.setItem(KEY,JSON.stringify(students));localStorage.setItem(LOG,JSON.stringify(logs.slice(-200)))}
+function note(t){logs.push(new Date().toLocaleString()+' - '+t);save()}
+function validPw(s){return s.length>=8 && /[A-Za-z]/.test(s) && /[0-9]/.test(s)}
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
+function setupLogin(){
+ const first=!localStorage.getItem(ADMIN);
+ document.getElementById('loginSub').textContent=first?'Create the administrator password':'Sign in to continue';
+ document.getElementById('confirmWrap').style.display=first?'block':'none';
+ document.getElementById('loginBtn').textContent=first?'Create password':'Login';
+ document.getElementById('loginBtn').onclick=login;
+}
+function login(){
+ if(Date.now()<lockUntil){toast('Too many attempts. Please wait.');return}
+ const p=document.getElementById('pw').value, first=!localStorage.getItem(ADMIN);
+ if(first){
+  const p2=document.getElementById('pw2').value;
+  if(!validPw(p)){toast('Use at least 8 characters with letters and numbers.');return}
+  if(p!==p2){toast('Passwords do not match.');return}
+  localStorage.setItem(ADMIN,hash(p));note('Password created');enter();
+ }else{
+  if(hash(p)===localStorage.getItem(ADMIN)){fails=0;note('Signed in');enter()}
+  else{fails++;document.getElementById('pw').value='';if(fails>=5){lockUntil=Date.now()+30000;toast('Login locked for 30 seconds.')}else toast('Wrong password. '+(5-fails)+' attempts left.')}
+ }
+}
+function enter(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';populateGrades();updateDashboard()}
+function logout(){note('Signed out');location.reload()}
+function show(id){
+ document.querySelectorAll('.view').forEach(x=>x.style.display='none');
+ document.getElementById(id).style.display='block';
+ document.getElementById('pageTitle').textContent={dashboard:'Dashboard',students:'Students',stats:'Statistics',log:'Activity log',settings:'Settings'}[id];
+ if(id==='students')renderStudents();if(id==='stats')renderStats();if(id==='log')renderLog();updateDashboard()
+}
+function populateGrades(){for(const id of ['gradeFilter','sgrade']){const e=document.getElementById(id);if(id==='sgrade')for(let i=1;i<=12;i++)e.innerHTML+=`<option>${i}</option>`;else for(let i=1;i<=12;i++)e.innerHTML+=`<option value="${i}">Grade ${i}</option>`}}
+function updateDashboard(){document.getElementById('total').textContent=students.length;document.getElementById('gradesN').textContent=new Set(students.map(s=>s.grade)).size;document.getElementById('latest').textContent=students.length?students[students.length-1].name:'-'}
+function renderStudents(){
+ const q=document.getElementById('search').value.trim().toLowerCase(), g=+document.getElementById('gradeFilter').value;
+ const a=students.filter(s=>(!g||s.grade===g)&&(!q||s.id.toLowerCase().includes(q)||s.name.toLowerCase().includes(q))).sort((a,b)=>a.id.localeCompare(b.id));
+ document.getElementById('studentRows').innerHTML=a.map(s=>`<tr><td>${esc(s.id)}</td><td>${esc(s.name)}</td><td>${s.grade}</td><td>${esc(s.section)}</td><td>${esc(s.phone)}</td><td>${esc(s.email)}</td><td><div class="actions"><button class="orange" onclick="editStudent('${encodeURIComponent(s.id)}')">Edit</button><button class="red" onclick="deleteStudent('${encodeURIComponent(s.id)}')">Delete</button></div></td></tr>`).join('');
+ document.getElementById('count').textContent=`${a.length} of ${students.length} students`
+}
+function openStudent(id=null){
+ editId=id?decodeURIComponent(id):null;document.getElementById('modalTitle').textContent=editId?'Edit student':'Add student';document.getElementById('saveStudentBtn').textContent=editId?'Update':'Save';
+ const s=editId?students.find(x=>x.id===editId):null;
+ document.getElementById('sid').value=s?s.id:'';document.getElementById('sid').readOnly=!!s;document.getElementById('sname').value=s?s.name:'';document.getElementById('sgrade').value=s?s.grade:1;document.getElementById('ssection').value=s?s.section:'A';document.getElementById('sphone').value=s?s.phone:'';document.getElementById('semail').value=s?s.email:'';
+ document.getElementById('studentModal').style.display='grid'
+}
+function closeModal(){document.getElementById('studentModal').style.display='none'}
+function saveStudent(){
+ let id=document.getElementById('sid').value.trim().toUpperCase(),name=document.getElementById('sname').value.trim().replace(/\s+/g,' '),phone=document.getElementById('sphone').value.trim(),email=document.getElementById('semail').value.trim();
+ if(!/^[A-Z0-9-]{3,12}$/.test(id)){toast('ID must be 3-12 letters, numbers or dashes.');return}
+ if(!/^[\p{L} .'-]{2,60}$/u.test(name)){toast('Enter a valid full name.');return}
+ if(phone&&!/^[0-9+\-\s]{6,15}$/.test(phone)){toast('Invalid phone number.');return}
+ if(email&&!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email)){toast('Invalid email address.');return}
+ const obj={id,name,grade:+document.getElementById('sgrade').value,section:document.getElementById('ssection').value,phone,email};
+ if(!editId){if(students.some(s=>s.id===id)){toast('This ID already exists.');return}students.push(obj);note('Added '+id);toast('Student added.')}
+ else{const i=students.findIndex(s=>s.id===editId);if(i<0)return;students[i]=obj;note('Updated '+id);toast('Student updated.')}
+ save();closeModal();renderStudents();updateDashboard()
+}
+function editStudent(id){openStudent(id)}
+function editPrompt(){const id=prompt('Enter student ID to edit:');if(id){const s=students.find(x=>x.id===id.trim().toUpperCase());if(s)openStudent(encodeURIComponent(s.id));else toast('No student with this ID.')}}
+function deleteStudent(id){id=decodeURIComponent(id);const s=students.find(x=>x.id===id);if(!s)return;if(confirm(`Delete ${s.name} (${s.id})? This cannot be undone.`)){students=students.filter(x=>x.id!==id);note('Deleted '+id);save();renderStudents();updateDashboard();toast('Student deleted.')}}
+function deletePrompt(){const id=prompt('Enter student ID to delete:');if(id){deleteStudent(encodeURIComponent(id.trim().toUpperCase()))}}
+function renderStats(){const max=Math.max(1,...Array.from({length:12},(_,i)=>students.filter(s=>s.grade===i+1).length));document.getElementById('statsRows').innerHTML=Array.from({length:12},(_,i)=>{const n=students.filter(s=>s.grade===i+1).length,w=Math.max(3,n*100/max);return `<div class="stats-row"><b style="width:70px">Grade ${i+1}</b><div class="bar" style="width:${w}%"></div><span>${n}</span></div>`}).join('')}
+function renderLog(){document.getElementById('logRows').innerHTML=logs.slice().reverse().map(x=>`<div>${esc(x)}</div>`).join('')||'<div class="muted">No activity yet.</div>'}
+function exportCSV(){
+ const q=document.getElementById('search').value.trim().toLowerCase(),g=+document.getElementById('gradeFilter').value;
+ const a=students.filter(s=>(!g||s.grade===g)&&(!q||s.id.toLowerCase().includes(q)||s.name.toLowerCase().includes(q)));
+ const c=v=>`"${String(v??'').replace(/"/g,'""')}"`;const out=['ID,Name,Grade,Section,Phone,Email',...a.map(s=>[c(s.id),c(s.name),s.grade,c(s.section),c(s.phone),c(s.email)].join(','))].join('\\n');
+ const blob=new Blob([out],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),ael=document.createElement('a');ael.href=url;ael.download='students.csv';ael.click();URL.revokeObjectURL(url);note('Exported CSV');toast('CSV exported.')
+}
+function changePassword(){
+ const a=document.getElementById('oldPw').value,b=document.getElementById('newPw').value,c=document.getElementById('newPw2').value;
+ if(hash(a)!==localStorage.getItem(ADMIN)){toast('Current password is wrong.');return}
+ if(!validPw(b)){toast('Use at least 8 characters with letters and numbers.');return}
+ if(b!==c){toast('New passwords do not match.');return}
+ localStorage.setItem(ADMIN,hash(b));note('Password changed');toast('Password changed.');document.getElementById('oldPw').value=document.getElementById('newPw').value=document.getElementById('newPw2').value=''
+}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>e.style.display='none',2600)}
+setupLogin();
+</script>
+</body>
+</html>
